@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>에코하모니 AI 자재관리 Dashboard</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --main:#0b5cad;
+  --main2:#073b7a;
+  --green:#16a34a;
+  --green-bg:#eaf8ef;
+  --green-line:#b7ebc6;
+  --yellow:#f0b429;
+  --yellow-bg:#fff8dd;
+  --yellow-line:#f3df7a;
+  --red:#d93025;
+  --red-bg:#fff1f1;
+  --blue-bg:#eef2ff;
+  --blue-line:#d7ddfb;
+  --gray:#6b7280;
+  --line:#e5e7eb;
+  --text:#111827;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+header{
+  background:linear-gradient(135deg,var(--main),var(--main2));
+  color:white;
+  padding:26px 34px;
+}
+header h1{margin:0;font-size:30px}
+header p{margin:8px 0 0;color:#dbeafe}
+.wrap{padding:24px;max-width:1500px;margin:auto}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+}
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+.card{
+  background:var(--card);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 4px 14px rgba(15,23,42,.08);
+  border:1px solid #eef2f7;
+}
+.stat-card{
+  min-height:112px;
+}
+.stat-title{
+  color:#5b6472;
+  font-weight:800;
+  font-size:16px;
+  margin-bottom:8px;
+}
+.stat-value{
+  font-size:30px;
+  line-height:1.1;
+  font-weight:900;
+  color:#0f172a;
+}
+.stat-sub{
+  margin-top:8px;
+  color:#5b6472;
+  font-size:13px;
+}
+.card h2{
+  margin:0 0 18px;
+  color:#0f172a;
+  font-size:22px;
+}
+.card h3{
+  margin:0 0 8px;
+  color:#374151;
+  font-size:15px;
+}
+.kpi{
+  font-size:30px;
+  font-weight:900;
+  color:var(--main);
+  margin:8px 0;
+}
+.small{font-size:13px;color:var(--gray);line-height:1.45}
+input,select{
+  width:100%;
+  padding:11px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  font-size:15px;
+  background:white;
+}
+.unit{font-size:12px;color:#6b7280;margin-top:6px}
+button{
+  border:0;
+  border-radius:10px;
+  background:var(--main);
+  color:white;
+  padding:12px 18px;
+  font-weight:800;
+  cursor:pointer;
+}
+button:hover{background:var(--main2)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:10px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{background:#f8fafc;color:#374151}
+.badge{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  color:white;
+  font-size:12px;
+  font-weight:800;
+}
+.green{background:var(--green)}
+.yellow{background:var(--yellow);color:#1f2937}
+.red{background:var(--red)}
+.gauge{
+  height:14px;
+  background:#e5e7eb;
+  border-radius:99px;
+  overflow:hidden;
+  margin:8px 0;
+}
+.gauge div{
+  height:100%;
+  border-radius:99px;
+}
+.progress{
+  height:12px;
+  background:#edf2f7;
+  border-radius:999px;
+  overflow:hidden;
+  margin-top:16px;
+}
+.progress div{
+  height:100%;
+  background:var(--green);
+  border-radius:999px;
+}
+.timeline{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
+.step{
+  background:#f8fafc;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  min-height:82px;
+}
+.step b{color:var(--main)}
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+}
+.day{
+  background:#f8fafc;
+  border:1px solid var(--line);
+  min-height:78px;
+  border-radius:10px;
+  padding:8px;
+  font-size:12px;
+}
+.day .date{font-weight:900;color:#111827}
+.order{background:#fff7ed;border-color:#fdba74}
+.arrive{background:#ecfdf5;border-color:#86efac}
+.box{
+  padding:14px;
+  border-radius:12px;
+  margin-top:10px;
+  line-height:1.55;
+}
+.warn{
+  background:var(--yellow-bg);
+  border:1px solid var(--yellow-line);
+}
+.alert{
+  background:var(--red-bg);
+  border-left:5px solid var(--red);
+}
+.ok{
+  background:var(--green-bg);
+  border:1px solid var(--green-line);
+}
+.info{
+  background:var(--blue-bg);
+  border:1px solid var(--blue-line);
+  color:#27306f;
+}
+.box b{display:block;margin-bottom:4px}
+footer{
+  color:#6b7280;
+  text-align:center;
+  padding:30px;
+  font-size:12px;
+}
+@media(max-width:1100px){
+  .grid,.grid-2,.grid-3{grid-template-columns:1fr}
+  .timeline,.calendar{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>㈜에코하모니 AI 자재관리 Dashboard</h1>
+  <p>재고 입력 → 생산 가능일 · 다음주/다음달 원자재 필요량 · 제품 재고 · 발주 추천 · 안전재고 자동 계산</p>
+</header>
+
+<div class="wrap">
+
+  <!-- 핵심 운영 기준: 상단 카드형 배치 -->
+  <section class="grid">
+    <div class="card stat-card">
+      <div class="stat-title">일 생산량</div>
+      <div class="stat-value">66 TON</div>
+      <div class="stat-sub">교반기 4기 × 16.5 TON</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-title">주 납품 평균</div>
+      <div class="stat-value">335 TON</div>
+      <div class="stat-sub">SK하이닉스 기준</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-title">저장탱크 총 용량</div>
+      <div class="stat-value">240 TON</div>
+      <div class="stat-sub">6기 × 40 TON</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-title">탱크로리 상차능력</div>
+      <div class="stat-value">100 TON</div>
+      <div class="stat-sub">5대 × 20 TON</div>
+    </div>
+  </section>
+
+  <section class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <h2>① 금일 생산 후 원자재 재고 입력</h2>
+      <div class="grid-3">
+        <div>
+          <h3>아황산나트륨 재고</h3>
+          <input id="stockA" type="number" value="198000" />
+          <div class="unit">KG · 직수입 중국산 · 리드타임 30일</div>
+        </div>
+        <div>
+          <h3>티오황산나트륨 재고</h3>
+          <input id="stockT" type="number" value="786000" />
+          <div class="unit">KG · 직수입 중국산 · 리드타임 30일</div>
+        </div>
+        <div>
+          <h3>수산화나트륨 재고</h3>
+          <input id="stockN" type="number" value="21000" />
+          <div class="unit">KG · 주 20톤 고정 입고 · 리드타임 3일</div>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top:14px">
+        <div>
+          <h3>주간 생산일수</h3>
+          <input id="weekDays" type="number" value="7" min="1" max="7" />
+          <div class="unit">기본 7일</div>
+        </div>
+        <div>
+          <h3>월간 생산일수</h3>
+          <input id="monthDays" type="number" value="30" min="1" max="31" />
+          <div class="unit">기본 30일</div>
+        </div>
+        <div>
+          <h3>기준일</h3>
+          <input id="baseDate" type="date" />
+          <div class="unit">발주 캘린더 기준일</div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <button onclick="calc()">대시보드 계산</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>② 현재 재고 기준 핵심 지표</h2>
+      <div class="grid-2">
+        <div>
+          <h3>현재 재고로 생산 가능일</h3>
+          <div id="possibleDays" class="kpi">-</div>
+          <p id="limitingMaterial" class="small">부족 기준 원자재: -</p>
+        </div>
+        <div>
+          <h3>현재 재고 기준 생산 가능량</h3>
+          <div id="possibleTon" class="kpi">-</div>
+          <p class="small">생산 가능일 × 66 TON</p>
+        </div>
+        <div>
+          <h3>납품 대비 재고 여유</h3>
+          <div id="deliveryCover" class="kpi">-</div>
+          <p class="small">주간 납품 335 TON 기준</p>
+        </div>
+        <div>
+          <h3>발주 우선순위</h3>
+          <div id="priority" class="kpi">-</div>
+          <p class="small">안전재고·리드타임 기준</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <h2>③ 다음주 / 다음달 원자재 필요량 예측</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>원자재</th>
+            <th>1일 소요량</th>
+            <th>다음주 필요량</th>
+            <th>다음달 필요량</th>
+            <th>현재 재고</th>
+            <th>월말 예상잔량</th>
+          </tr>
+        </thead>
+        <tbody id="forecastRows"></tbody>
+      </table>
+      <div id="forecastComment"></div>
+    </div>
+
+    <div class="card">
+      <h2>④ 납품량 대비 제품 재고 예측</h2>
+      <div class="grid-2">
+        <div>
+          <h3>현재 저장탱크 제품 재고</h3>
+          <input id="productStock" type="number" value="160" />
+          <div class="unit">TON</div>
+        </div>
+        <div>
+          <h3>차주 SK하이닉스 납품계획</h3>
+          <input id="nextDelivery" type="number" value="335" />
+          <div class="unit">TON</div>
+        </div>
+      </div>
+      <div id="productStockResult" class="box warn" style="margin-top:18px"></div>
+      <div style="margin-top:18px">
+        <b>저장탱크 현재 사용률: <span id="tankRate">-</span></b>
+        <div class="progress"><div id="tankBar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <h2>⑤ 저장탱크·탱크로리 운영 체크</h2>
+      <div id="operationChecks"></div>
+    </div>
+
+    <div class="card">
+      <h2>⑥ 안전재고 게이지</h2>
+      <div id="gaugeArea"></div>
+      <p class="small">초록: 안전재고 이상 / 노랑: 리드타임+안전재고 근접 / 빨강: 즉시 발주 필요</p>
+    </div>
+  </section>
+
+  <section class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <h2>⑦ 발주시점 자동 추천</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>원자재</th>
+            <th>리드타임</th>
+            <th>안전재고</th>
+            <th>현재 재고일수</th>
+            <th>추천 발주일</th>
+            <th>입고 예상일</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody id="orderRows"></tbody>
+      </table>
+      <div id="orderComment"></div>
+    </div>
+
+    <div class="card">
+      <h2>⑧ 발주 예정일 캘린더</h2>
+      <div class="calendar" id="calendar"></div>
+      <p class="small">주황색: 발주 권장일 / 초록색: 입고 예상일. 중국 수입 원료는 30일 리드타임 반영.</p>
+    </div>
+  </section>
+
+  <section class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <h2>⑨ SK하이닉스 납품 기준</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>납품처</th>
+            <th>주간 횟수</th>
+            <th>시간</th>
+            <th>주간 납품량</th>
+            <th>20톤 환산</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>이천 M14</td><td>7회</td><td>09시</td><td>105 TON</td><td>5.3대</td></tr>
+          <tr><td>이천 M16</td><td>5회</td><td>15시</td><td>100 TON</td><td>5.0대</td></tr>
+          <tr><td>청주 M11</td><td>2회</td><td>19시</td><td>35 TON</td><td>1.8대</td></tr>
+          <tr><td>청주 M15</td><td>4회</td><td>19시</td><td>75 TON</td><td>3.8대</td></tr>
+          <tr><td>청주 M15X</td><td>1회</td><td>09시</td><td>20 TON</td><td>1.0대</td></tr>
+        </tbody>
+      </table>
+      <div id="deliveryComment"></div>
+    </div>
+
+    <div class="card">
+      <h2>⑩ 생산 시간표</h2>
+      <div class="timeline">
+        <div class="step"><b>09:00</b><br>교반기 원자재 투입</div>
+        <div class="step"><b>11:00</b><br>투입 종료 및 교반 시작</div>
+        <div class="step"><b>13:00</b><br>교반 종료 및 저장탱크 이송</div>
+        <div class="step"><b>15:00</b><br>이송 종료 및 명일 물 투입</div>
+        <div class="step"><b>17:00</b><br>생산 종료</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  EcoHarmony Material Management Dashboard · HTML 단일 파일 · GitHub Pages 사용 가능
+</footer>
+
+<script>
+const materials = [
+  {
+    key:"A",
+    name:"아황산나트륨",
+    dailyUse:3300,
+    lead:30,
+    safetyDays:60,
+    maxDays:180,
+    weeklyInbound:0
+  },
+  {
+    key:"T",
+    name:"티오황산나트륨",
+    dailyUse:13100,
+    lead:30,
+    safetyDays:60,
+    maxDays:180,
+    weeklyInbound:0
+  },
+  {
+    key:"N",
+    name:"수산화나트륨",
+    dailyUse:3000,
+    lead:3,
+    safetyDays:3,
+    maxDays:7,
+    weeklyInbound:20000
+  }
+];
+
+const dailyProductionTon = 66;
+const weeklyDeliveryTonDefault = 335;
+const tankCapacityTon = 240;
+const truckCount = 5;
+const truckCapacityTon = 20;
+const totalTruckCapacityTon = truckCount * truckCapacityTon;
+const pumpHourPer20Ton = 1;
+
+function fmt(n){ return Number(n).toLocaleString("ko-KR", {maximumFractionDigits:1}); }
+function f1(n){ return Number(n).toFixed(1); }
+function addDays(date, days){
+  const d = new Date(date);
+  d.setDate(d.getDate()+days);
+  return d;
+}
+function ymd(date){
+  return date.toISOString().slice(0,10);
+}
+function korDate(date){
+  return `${date.getMonth()+1}/${date.getDate()}`;
+}
+function statusBadge(days, safety, lead){
+  if(days <= safety) return `<span class="badge red">즉시 발주</span>`;
+  if(days <= safety + lead) return `<span class="badge yellow">발주 준비</span>`;
+  return `<span class="badge green">정상</span>`;
+}
+function gaugeColor(days, safety, lead){
+  if(days <= safety) return "var(--red)";
+  if(days <= safety + lead) return "var(--yellow)";
+  return "var(--green)";
+}
+
+function calc(){
+  const baseInput = document.getElementById("baseDate").value;
+  const base = baseInput ? new Date(baseInput+"T00:00:00") : new Date();
+  const weekDays = Number(document.getElementById("weekDays").value);
+  const monthDays = Number(document.getElementById("monthDays").value);
+  const productStock = Number(document.getElementById("productStock").value || 0);
+  const nextDelivery = Number(document.getElementById("nextDelivery").value || weeklyDeliveryTonDefault);
+
+  const stocks = {
+    A:Number(document.getElementById("stockA").value||0),
+    T:Number(document.getElementById("stockT").value||0),
+    N:Number(document.getElementById("stockN").value||0)
+  };
+
+  // 수산화나트륨은 고정적으로 주 20톤 입고 반영
+  const weekInboundN = 20000;
+  const monthInboundN = (monthDays/7) * weekInboundN;
+
+  const aDays = stocks.A / materials[0].dailyUse;
+  const tDays = stocks.T / materials[1].dailyUse;
+
+  // 요청사항: 생산 가능일 기준은 아황산나트륨 또는 티오황산나트륨 중 먼저 부족한 원료
+  const possibleDays = Math.min(aDays, tDays);
+  const limiting = aDays <= tDays ? "아황산나트륨" : "티오황산나트륨";
+  const weeks = possibleDays/7;
+  const possibleTon = possibleDays * dailyProductionTon;
+  const deliveryWeeks = possibleTon / weeklyDeliveryTonDefault;
+
+  document.getElementById("possibleDays").innerText = `${f1(possibleDays)}일 (${f1(weeks)}주)`;
+  document.getElementById("limitingMaterial").innerText = `부족 기준 원자재: ${limiting}`;
+  document.getElementById("possibleTon").innerText = `${fmt(possibleTon)} TON`;
+  document.getElementById("deliveryCover").innerText = `${f1(deliveryWeeks)}주`;
+
+  let priorityMaterial = null;
+  let minGap = Infinity;
+  materials.forEach(m=>{
+    const effectiveStock = m.key === "N" ? stocks.N + weekInboundN : stocks[m.key];
+    const days = effectiveStock/m.dailyUse;
+    const gap = days - m.safetyDays;
+    if(gap < minGap){ minGap = gap; priorityMaterial = m; }
+  });
+  document.getElementById("priority").innerText = priorityMaterial.name;
+
+  let forecastHtml = "";
+  materials.forEach(m=>{
+    const weekNeed = m.dailyUse * weekDays;
+    const monthNeed = m.dailyUse * monthDays;
+    const weekInbound = m.key === "N" ? weekInboundN : 0;
+    const monthInbound = m.key === "N" ? monthInboundN : 0;
+    const remain = stocks[m.key] + monthInbound - monthNeed;
+    const inboundText = m.key === "N" ? `<br><span class="small">주 20,000kg 입고 반영</span>` : "";
+    forecastHtml += `
+      <tr>
+        <td>${m.name}${inboundText}</td>
+        <td>${fmt(m.dailyUse)} kg</td>
+        <td>${fmt(weekNeed)} kg</td>
+        <td>${fmt(monthNeed)} kg</td>
+        <td>${fmt(stocks[m.key])} kg</td>
+        <td>${fmt(remain)} kg</td>
+      </tr>`;
+  });
+  document.getElementById("forecastRows").innerHTML = forecastHtml;
+
+  const afterMonthA = stocks.A - materials[0].dailyUse*monthDays;
+  const afterMonthT = stocks.T - materials[1].dailyUse*monthDays;
+  const monthRisk = Math.min(afterMonthA/materials[0].dailyUse, afterMonthT/materials[1].dailyUse);
+  document.getElementById("forecastComment").innerHTML =
+    monthRisk < 60
+    ? `<div class="box warn">다음달 생산 후 중국 직수입 원료의 안전재고 2개월 기준에 근접하거나 부족할 수 있습니다. 목요일 납품계획 확정 시 즉시 재계산이 필요합니다.</div>`
+    : `<div class="box ok">다음달 생산 기준으로도 중국 직수입 원료 안전재고는 비교적 안정적입니다.</div>`;
+
+  // 납품량 대비 제품 재고 예측
+  const weeklyProduction = dailyProductionTon * weekDays;
+  const nextProductStock = productStock + weeklyProduction - nextDelivery;
+  const tankRate = Math.min(100, Math.max(0, productStock / tankCapacityTon * 100));
+  document.getElementById("productStockResult").innerHTML =
+    `<b>차주 제품 재고 예상: ${fmt(nextProductStock)} TON</b>
+     현재 제품 ${fmt(productStock)} TON + 주 생산 ${fmt(weeklyProduction)} TON - 차주 납품 ${fmt(nextDelivery)} TON 기준입니다.`;
+  document.getElementById("tankRate").innerText = `${f1(tankRate)}%`;
+  document.getElementById("tankBar").style.width = `${tankRate}%`;
+  document.getElementById("tankBar").style.background = tankRate > 90 ? "var(--red)" : tankRate > 75 ? "var(--yellow)" : "var(--green)";
+
+  // 운영 체크
+  const truckTrips = nextDelivery / truckCapacityTon;
+  const pumpHours = truckTrips * pumpHourPer20Ton;
+  const avgTripsPerTruck = truckTrips / truckCount;
+  let productBoxClass = nextProductStock < 0 ? "alert" : "ok";
+  let tankBoxClass = productStock > tankCapacityTon ? "alert" : productStock > tankCapacityTon*0.9 ? "warn" : "ok";
+  let truckBoxClass = avgTripsPerTruck > 7 ? "warn" : "ok";
+
+  document.getElementById("operationChecks").innerHTML = `
+    <div class="box ${productBoxClass}">
+      <b>생산능력 체크</b>
+      주 생산 가능량은 ${fmt(weeklyProduction)} TON이며, 차주 입력 납품량은 ${fmt(nextDelivery)} TON입니다.
+    </div>
+    <div class="box ${tankBoxClass}">
+      <b>저장탱크 체크</b>
+      총 ${tankCapacityTon} TON 중 현재 ${fmt(productStock)} TON 보관 중입니다.
+    </div>
+    <div class="box ${truckBoxClass}">
+      <b>상차 작업량 체크</b>
+      차주 예상 상차 횟수 ${f1(truckTrips)}회, 펌프 이송 ${f1(pumpHours)}시간, 차량 1대당 평균 ${f1(avgTripsPerTruck)}회/주입니다.
+    </div>
+    <div class="box info">
+      <b>목요일 납품계획 내용</b>
+      SK하이닉스 차주 요청 접수 후, 이 화면의 ‘차주 납품계획’에 총 톤수를 입력하면 원자재·제품 재고 부족 여부를 즉시 확인할 수 있습니다.
+    </div>`;
+
+  // 안전재고 게이지
+  let gaugeHtml = "";
+  materials.forEach(m=>{
+    const effectiveStock = m.key === "N" ? stocks.N + weekInboundN : stocks[m.key];
+    const days = effectiveStock/m.dailyUse;
+    const pct = Math.min(100, (days / m.maxDays) * 100);
+    const extra = m.key === "N" ? " · 주 20톤 입고 반영" : "";
+    gaugeHtml += `
+      <div style="margin-bottom:18px">
+        <div style="display:flex;justify-content:space-between;gap:8px">
+          <b>${m.name}</b>
+          <span>${f1(days)}일 / 최대 ${m.maxDays}일</span>
+        </div>
+        <div class="gauge"><div style="width:${pct}%;background:${gaugeColor(days,m.safetyDays,m.lead)}"></div></div>
+        <div class="small">안전재고 ${m.safetyDays}일 · 리드타임 ${m.lead}일 · 현재 보관률 ${f1(pct)}%${extra}</div>
+      </div>`;
+  });
+  document.getElementById("gaugeArea").innerHTML = gaugeHtml;
+
+  // 발주 추천
+  let orderHtml = "";
+  let urgentCount = 0;
+  let calendarEvents = [];
+  materials.forEach(m=>{
+    const effectiveStock = m.key === "N" ? stocks.N + weekInboundN : stocks[m.key];
+    const days = effectiveStock/m.dailyUse;
+    const reorderIn = Math.floor(days - (m.safetyDays + m.lead));
+    const orderDate = addDays(base, Math.max(0,reorderIn));
+    const arrivalDate = addDays(orderDate, m.lead);
+    if(reorderIn <= 0) urgentCount++;
+    calendarEvents.push({type:"order", name:m.name, date:ymd(orderDate)});
+    calendarEvents.push({type:"arrive", name:m.name, date:ymd(arrivalDate)});
+    const note = m.key === "N" ? "<br><span class='small'>주 20톤 입고 반영</span>" : "";
+    orderHtml += `
+      <tr>
+        <td>${m.name}${note}</td>
+        <td>${m.lead}일</td>
+        <td>${m.safetyDays}일</td>
+        <td>${f1(days)}일</td>
+        <td>${ymd(orderDate)}</td>
+        <td>${ymd(arrivalDate)}</td>
+        <td>${statusBadge(days,m.safetyDays,m.lead)}</td>
+      </tr>`;
+  });
+  document.getElementById("orderRows").innerHTML = orderHtml;
+
+  document.getElementById("orderComment").innerHTML =
+    urgentCount > 0
+    ? `<div class="box alert">즉시 발주 대상 원자재가 있습니다. 특히 아황산나트륨과 티오황산나트륨은 중국 직수입 30일 리드타임이 있어 납기 지연 시 생산 차질 위험이 큽니다.</div>`
+    : `<div class="box ok">현재 기준 즉시 발주 대상은 없습니다. 단, SK하이닉스 차주 입고 요청이 증가하면 목요일에 재계산해야 합니다.</div>`;
+
+  makeCalendar(base, calendarEvents);
+
+  document.getElementById("deliveryComment").innerHTML =
+    `<div class="box ok">주간 총 납품량은 335 TON이며, 20 TON 탱크로리 기준 약 ${f1(weeklyDeliveryTonDefault/20)}대 분량입니다. 청주 M15X 납품 시간은 09시로 반영했습니다.</div>`;
+}
+
+function makeCalendar(base, events){
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+  for(let i=0;i<42;i++){
+    const d = addDays(base,i);
+    const key = ymd(d);
+    const evs = events.filter(e=>e.date===key);
+    let cls = "day";
+    if(evs.some(e=>e.type==="order")) cls += " order";
+    if(evs.some(e=>e.type==="arrive")) cls += " arrive";
+    let html = `<div class="${cls}"><div class="date">${korDate(d)}</div>`;
+    evs.forEach(e=>{
+      html += `<div>${e.type==="order" ? "발주" : "입고"}: ${e.name}</div>`;
+    });
+    html += `</div>`;
+    cal.innerHTML += html;
+  }
+}
+
+(function init(){
+  document.getElementById("baseDate").value = new Date().toISOString().slice(0,10);
+  calc();
+})();
+</script>
+</body>
+</html>
