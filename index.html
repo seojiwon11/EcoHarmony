@@ -218,9 +218,54 @@ footer{
   .grid,.grid-2,.grid-3{grid-template-columns:1fr}
   .timeline,.calendar{grid-template-columns:1fr}
 }
+
+.auth-overlay{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:linear-gradient(135deg,#0b5cad,#073b7a);
+}
+.auth-box{
+  width:min(420px,100%);
+  background:#fff;
+  border-radius:18px;
+  padding:30px;
+  box-shadow:0 18px 50px rgba(0,0,0,.28);
+  text-align:center;
+}
+.auth-box h2{margin:0 0 10px;font-size:25px;color:#0f172a}
+.auth-box p{margin:0 0 20px;color:#64748b;line-height:1.5}
+.auth-box input{
+  text-align:center;
+  font-size:20px;
+  letter-spacing:8px;
+  margin-bottom:12px;
+}
+.auth-box button{width:100%;font-size:16px}
+.auth-error{min-height:22px;margin-top:10px;color:#d93025;font-weight:800;font-size:14px}
+body.auth-locked{overflow:hidden}
+body.auth-locked > header,
+body.auth-locked > .wrap,
+body.auth-locked > footer{visibility:hidden}
+
 </style>
 </head>
-<body>
+<body class="auth-locked">
+
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-box">
+    <h2>에코하모니 자재관리 Dashboard</h2>
+    <p>대시보드를 보려면 비밀번호를 입력하세요.</p>
+    <input id="dashboardPassword" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••" aria-label="비밀번호" />
+    <button type="button" onclick="unlockDashboard()">확인</button>
+    <div id="authError" class="auth-error"></div>
+  </div>
+</div>
+
 <header>
   <h1>㈜에코하모니 AI 자재관리 Dashboard</h1>
   <p>재고 입력 → 생산 가능일 · 다음주/다음달 원자재 필요량 · 제품 재고 · 발주 추천 · 안전재고 자동 계산</p>
@@ -258,17 +303,17 @@ footer{
       <div class="grid-3">
         <div>
           <h3>아황산나트륨 재고</h3>
-          <input id="stockA" type="number" value="198000" />
+          <input id="stockA" type="number" value="202000" />
           <div class="unit">KG · 직수입 중국산 · 리드타임 30일</div>
         </div>
         <div>
           <h3>티오황산나트륨 재고</h3>
-          <input id="stockT" type="number" value="786000" />
+          <input id="stockT" type="number" value="850000" />
           <div class="unit">KG · 직수입 중국산 · 리드타임 30일</div>
         </div>
         <div>
           <h3>수산화나트륨 재고</h3>
-          <input id="stockN" type="number" value="21000" />
+          <input id="stockN" type="number" value="10300" />
           <div class="unit">KG · 주 20톤 고정 입고 · 리드타임 3일</div>
         </div>
       </div>
@@ -398,7 +443,7 @@ footer{
     <div class="card">
       <h2>⑧ 발주 예정일 캘린더</h2>
       <div class="calendar" id="calendar"></div>
-      <p class="small">주황색: 발주 권장일 / 초록색: 입고 예상일. 중국 수입 원료는 30일 리드타임 반영.</p>
+      <p class="small">주황색: 발주 권장일 / 초록색: 확정 입고 및 입고 예상일. 7월 30~31일 확정 입고와 중국 수입 원료 30일 리드타임 반영.</p>
     </div>
   </section>
 
@@ -445,6 +490,30 @@ footer{
 </footer>
 
 <script>
+
+function unlockDashboard(){
+  const input = document.getElementById("dashboardPassword");
+  const error = document.getElementById("authError");
+  if(input.value === "2750"){
+    document.body.classList.remove("auth-locked");
+    document.getElementById("authOverlay").style.display = "none";
+    error.textContent = "";
+  }else{
+    error.textContent = "비밀번호가 올바르지 않습니다.";
+    input.value = "";
+    input.focus();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  const input = document.getElementById("dashboardPassword");
+  input.focus();
+  input.addEventListener("keydown", function(event){
+    if(event.key === "Enter") unlockDashboard();
+  });
+});
+
+
 const materials = [
   {
     key:"A",
@@ -470,7 +539,7 @@ const materials = [
     dailyUse:3000,
     lead:3,
     safetyDays:3,
-    maxDays:7,
+    maxDays:20,
     weeklyInbound:20000
   }
 ];
@@ -482,6 +551,24 @@ const truckCount = 5;
 const truckCapacityTon = 20;
 const totalTruckCapacityTon = truckCount * truckCapacityTon;
 const pumpHourPer20Ton = 1;
+
+// 2026년 확정 입고 예정 자재
+const scheduledInbounds = [
+  {key:"A", name:"아황산나트륨", date:"2026-07-30", qty:60000},
+  {key:"T", name:"티오황산나트륨", date:"2026-07-30", qty:100000},
+  {key:"T", name:"티오황산나트륨", date:"2026-07-31", qty:140000}
+];
+
+function scheduledFor(key){
+  return scheduledInbounds.filter(x=>x.key===key);
+}
+function projectedStockAt(stock, material, base, targetDate){
+  const elapsed = Math.max(0, Math.floor((targetDate-base)/86400000));
+  const inbound = scheduledFor(material.key)
+    .filter(x=>new Date(x.date+"T00:00:00") >= base && new Date(x.date+"T00:00:00") <= targetDate)
+    .reduce((sum,x)=>sum+x.qty,0);
+  return stock - material.dailyUse*elapsed + inbound;
+}
 
 function fmt(n){ return Number(n).toLocaleString("ko-KR", {maximumFractionDigits:1}); }
 function f1(n){ return Number(n).toFixed(1); }
@@ -615,13 +702,22 @@ function calc(){
       SK하이닉스 차주 요청 접수 후, 이 화면의 ‘차주 납품계획’에 총 톤수를 입력하면 원자재·제품 재고 부족 여부를 즉시 확인할 수 있습니다.
     </div>`;
 
-  // 안전재고 게이지
+  // 안전재고 게이지: 7/30~7/31 확정 입고와 입고일까지의 사용량 반영
   let gaugeHtml = "";
   materials.forEach(m=>{
-    const effectiveStock = m.key === "N" ? stocks.N + weekInboundN : stocks[m.key];
-    const days = effectiveStock/m.dailyUse;
+    let effectiveStock = m.key === "N" ? stocks.N + weekInboundN : stocks[m.key];
+    let asOfText = "현재 기준";
+    let extra = m.key === "N" ? " · 주 20톤 입고 반영" : "";
+    const plans = scheduledFor(m.key).filter(x=>new Date(x.date+"T00:00:00") >= base);
+    if(plans.length){
+      const lastDate = new Date(plans[plans.length-1].date+"T00:00:00");
+      effectiveStock = projectedStockAt(stocks[m.key], m, base, lastDate);
+      const totalInbound = plans.reduce((sum,x)=>sum+x.qty,0);
+      asOfText = `${korDate(lastDate)} 입고 후 예상`;
+      extra = ` · 확정 입고 ${fmt(totalInbound/1000)}톤 반영`;
+    }
+    const days = Math.max(0,effectiveStock/m.dailyUse);
     const pct = Math.min(100, (days / m.maxDays) * 100);
-    const extra = m.key === "N" ? " · 주 20톤 입고 반영" : "";
     gaugeHtml += `
       <div style="margin-bottom:18px">
         <div style="display:flex;justify-content:space-between;gap:8px">
@@ -629,25 +725,36 @@ function calc(){
           <span>${f1(days)}일 / 최대 ${m.maxDays}일</span>
         </div>
         <div class="gauge"><div style="width:${pct}%;background:${gaugeColor(days,m.safetyDays,m.lead)}"></div></div>
-        <div class="small">안전재고 ${m.safetyDays}일 · 리드타임 ${m.lead}일 · 현재 보관률 ${f1(pct)}%${extra}</div>
+        <div class="small">${asOfText} · 안전재고 ${m.safetyDays}일 · 리드타임 ${m.lead}일 · 보관률 ${f1(pct)}%${extra}</div>
       </div>`;
   });
   document.getElementById("gaugeArea").innerHTML = gaugeHtml;
 
-  // 발주 추천
+  // 발주 추천: 확정 입고 예정량과 입고일까지의 사용량 반영
   let orderHtml = "";
   let urgentCount = 0;
-  let calendarEvents = [];
+  let calendarEvents = scheduledInbounds.map(x=>({
+    type:"confirmed", name:`${x.name} ${fmt(x.qty/1000)}톤`, date:x.date
+  }));
   materials.forEach(m=>{
-    const effectiveStock = m.key === "N" ? stocks.N + weekInboundN : stocks[m.key];
-    const days = effectiveStock/m.dailyUse;
+    let effectiveStock = m.key === "N" ? stocks.N + weekInboundN : stocks[m.key];
+    let calculationBase = base;
+    let note = m.key === "N" ? "<br><span class='small'>주 20톤 입고 반영</span>" : "";
+    const plans = scheduledFor(m.key).filter(x=>new Date(x.date+"T00:00:00") >= base);
+    if(plans.length){
+      calculationBase = new Date(plans[plans.length-1].date+"T00:00:00");
+      effectiveStock = projectedStockAt(stocks[m.key], m, base, calculationBase);
+      const totalInbound = plans.reduce((sum,x)=>sum+x.qty,0);
+      note = `<br><span class='small'>${korDate(calculationBase)}까지 확정 입고 ${fmt(totalInbound/1000)}톤 반영</span>`;
+    }
+    const days = Math.max(0,effectiveStock/m.dailyUse);
     const reorderIn = Math.floor(days - (m.safetyDays + m.lead));
-    const orderDate = addDays(base, Math.max(0,reorderIn));
+    const calculatedOrderDate = addDays(calculationBase, Math.max(0,reorderIn));
+    const orderDate = calculatedOrderDate < base ? base : calculatedOrderDate;
     const arrivalDate = addDays(orderDate, m.lead);
     if(reorderIn <= 0) urgentCount++;
     calendarEvents.push({type:"order", name:m.name, date:ymd(orderDate)});
-    calendarEvents.push({type:"arrive", name:m.name, date:ymd(arrivalDate)});
-    const note = m.key === "N" ? "<br><span class='small'>주 20톤 입고 반영</span>" : "";
+    calendarEvents.push({type:"arrive", name:`${m.name} 추천발주분`, date:ymd(arrivalDate)});
     orderHtml += `
       <tr>
         <td>${m.name}${note}</td>
@@ -681,10 +788,11 @@ function makeCalendar(base, events){
     const evs = events.filter(e=>e.date===key);
     let cls = "day";
     if(evs.some(e=>e.type==="order")) cls += " order";
-    if(evs.some(e=>e.type==="arrive")) cls += " arrive";
+    if(evs.some(e=>e.type==="arrive" || e.type==="confirmed")) cls += " arrive";
     let html = `<div class="${cls}"><div class="date">${korDate(d)}</div>`;
     evs.forEach(e=>{
-      html += `<div>${e.type==="order" ? "발주" : "입고"}: ${e.name}</div>`;
+      const label = e.type==="order" ? "발주" : e.type==="confirmed" ? "확정 입고" : "입고 예상";
+      html += `<div>${label}: ${e.name}</div>`;
     });
     html += `</div>`;
     cal.innerHTML += html;
